@@ -53,21 +53,39 @@ class Cluster(object):
         self and the other point is from other. Uses the 
         Euclidean dist between 2 points, defined in Point."""
         # TO DO
-        pass
+        singleLinkageDist = float('inf')
+        for point1 in self.members():
+            for point2 in other.members():
+                dist = point1.distance(point2)
+                if dist <= singleLinkageDist:
+                    singleLinkageDist = dist
+        return singleLinkageDist
     def maxLinkageDist(self, other):
         """ Returns the float distance between the points that 
         are farthest from each other, where one point is from 
         self and the other point is from other. Uses the 
         Euclidean dist between 2 points, defined in Point."""
         # TO DO
-        pass
+        maxLinkageDist = 0
+        for point1 in self.members():
+            for point2 in other.members():
+                dist = point1.distance(point2)
+                if dist >= maxLinkageDist:
+                    maxLinkageDist = dist
+        return maxLinkageDist      
+
     def averageLinkageDist(self, other):
         """ Returns the float average (mean) distance between all 
         pairs of points, where one point is from self and the 
         other point is from other. Uses the Euclidean dist 
         between 2 points, defined in Point."""
         # TO DO
-        pass
+        dists = 0
+        n = len(self.points) * len(other.points)
+        for point1 in self.members():
+            for point2 in other.members():
+                dists += point1.distance(point2)
+        return dists / float(n)
     def members(self):
         for p in self.points:
             yield p
@@ -116,19 +134,31 @@ class ClusterSet(object):
         Adds to self a cluster containing the union of c1 and c2
         and removes c1 and c2 from self """
         # TO DO
-        pass
+        self.members.remove(c1)
+        self.members.remove(c2)
+        self.add(Cluster(c1.points + c2.points, c1.pointType))
     def findClosest(self, linkage):
         """ Returns a tuple containing the two most similar 
         clusters in self
         Closest defined using the metric linkage """
         # TO DO
-        pass
+        closest_dist = float('inf')
+        closest_tuple = ()
+        clusters = self.getClusters()
+        for index, c1 in enumerate(clusters):
+            for c2 in clusters[index+1:]:
+                dist = linkage(c1, c2)
+                if dist <= closest_dist:
+                    closest_tuple = (c1, c2)
+        return closest_tuple
+
     def mergeOne(self, linkage):
         """ Merges the two most simililar clusters in self
         Similar defined using the metric linkage
         Returns the clusters that were merged """
         # TO DO
-        pass
+        c1, c2 = self.findClosest(linkage)
+        self.mergeClusters(c1, c2)
     def numClusters(self):
         return len(self.members)
     def toStr(self):
@@ -226,6 +256,6 @@ def test():
     #hCluster(points, Cluster.averageLinkageDist, 10, False)
     #hCluster(points, Cluster.singleLinkageDist, 10, False)
 
-#test()
+test()
 
 
