@@ -115,65 +115,67 @@ class Cluster(object):
             result = result + p + ', '
         return result[:-2]
 
-class ClusterSet(object):
-    """ A ClusterSet is defined as a list of clusters """
-    def __init__(self, pointType):
-        """ Initialize an empty set, without any clusters """
-        self.members = []
-    def add(self, c):
-        """ Append a cluster to the end of the cluster list
-        only if it doesn't already exist. If it is already in the 
-        cluster set, raise a ValueError """
-        if c in self.members:
-            raise ValueError
-        self.members.append(c)
-    def getClusters(self):
-        return self.members[:]
-    def mergeClusters(self, c1, c2):
-        """ Assumes clusters c1 and c2 are in self
-        Adds to self a cluster containing the union of c1 and c2
-        and removes c1 and c2 from self """
-        # TO DO
-        self.members.remove(c1)
-        self.members.remove(c2)
-        self.add(Cluster(c1.points + c2.points, c1.pointType))
-    def findClosest(self, linkage):
-        """ Returns a tuple containing the two most similar 
-        clusters in self
-        Closest defined using the metric linkage """
-        # TO DO
-        closest_dist = float('inf')
-        closest_tuple = ()
-        clusters = self.getClusters()
-        for index, c1 in enumerate(clusters):
-            for c2 in clusters[index+1:]:
-                dist = linkage(c1, c2)
-                if dist <= closest_dist:
-                    closest_tuple = (c1, c2)
-        return closest_tuple
+    class ClusterSet(object):
+        """ A ClusterSet is defined as a list of clusters """
+        def __init__(self, pointType):
+            """ Initialize an empty set, without any clusters """
+            self.members = []
+        def add(self, c):
+            """ Append a cluster to the end of the cluster list
+            only if it doesn't already exist. If it is already in the 
+            cluster set, raise a ValueError """
+            if c in self.members:
+                raise ValueError
+            self.members.append(c)
+        def getClusters(self):
+            return self.members[:]
+        def mergeClusters(self, c1, c2):
+            """ Assumes clusters c1 and c2 are in self
+            Adds to self a cluster containing the union of c1 and c2
+            and removes c1 and c2 from self """
+            # TO DO
+            self.members.remove(c1)
+            self.members.remove(c2)
+            self.add(Cluster(c1.points + c2.points, c1.pointType))
+        def findClosest(self, linkage):
+            """ Returns a tuple containing the two most similar 
+            clusters in self
+            Closest defined using the metric linkage """
+            # TO DO
+            closest_dist = float('inf')
+            closest_tuple = ()
+            clusters = self.getClusters()
+            for index, c1 in enumerate(clusters):
+                for c2 in clusters[index+1:]:
+                    dist = linkage(c1, c2)
+                    if dist < closest_dist:
+                        closest_tuple = (c1, c2)
+                        closest_dist = dist
+            return closest_tuple
 
-    def mergeOne(self, linkage):
-        """ Merges the two most simililar clusters in self
-        Similar defined using the metric linkage
-        Returns the clusters that were merged """
-        # TO DO
-        c1, c2 = self.findClosest(linkage)
-        self.mergeClusters(c1, c2)
-    def numClusters(self):
-        return len(self.members)
-    def toStr(self):
-        cNames = []
-        for c in self.members:
-            cNames.append(c.getNames())
-        cNames.sort()
-        result = ''
-        for i in range(len(cNames)):
-            names = ''
-            for n in cNames[i]:
-                names += n + ', '
-            names = names[:-2]
-            result += '  C' + str(i) + ':' + names + '\n'
-        return result
+        def mergeOne(self, linkage):
+            """ Merges the two most simililar clusters in self
+            Similar defined using the metric linkage
+            Returns the clusters that were merged """
+            # TO DO
+            (c1, c2) = self.findClosest(linkage)
+            self.mergeClusters(c1, c2)
+            return (c1, c2)
+        def numClusters(self):
+            return len(self.members)
+        def toStr(self):
+            cNames = []
+            for c in self.members:
+                cNames.append(c.getNames())
+            cNames.sort()
+            result = ''
+            for i in range(len(cNames)):
+                names = ''
+                for n in cNames[i]:
+                    names += n + ', '
+                names = names[:-2]
+                result += '  C' + str(i) + ':' + names + '\n'
+            return result
 
 #City climate example
 class City(Point):
@@ -249,12 +251,25 @@ def hCluster(points, linkage, numClusters, printHistory):
     return cS
 
 def test():
+    n = 5
+    print '--- # of clusters is %s-----' % n
+    print '---without scaling-----'
     points = buildCityPoints('cityTemps.txt', False)
-    hCluster(points, Cluster.singleLinkageDist, 10, False)
-    #points = buildCityPoints('cityTemps.txt', True)
-    #hCluster(points, Cluster.maxLinkageDist, 10, False)
-    #hCluster(points, Cluster.averageLinkageDist, 10, False)
-    #hCluster(points, Cluster.singleLinkageDist, 10, False)
+    # print '---maxLinkageDist-----'
+    # hCluster(points, Cluster.maxLinkageDist, n, False)
+    # print '---averageLinkageDist-----'
+    # hCluster(points, Cluster.averageLinkageDist, n, False)
+    print '---singleLinkageDist-----'
+    hCluster(points, Cluster.singleLinkageDist, n, False)
+
+    print '--------with scaling-----'
+    points = buildCityPoints('cityTemps.txt', True)
+    # print '---maxLinkageDist-----'
+    # hCluster(points, Cluster.maxLinkageDist, n, False)
+    # print '---averageLinkageDist-----'
+    # hCluster(points, Cluster.averageLinkageDist, n, False)
+    print '---singleLinkageDist-----'
+    hCluster(points, Cluster.singleLinkageDist, n, False)
 
 test()
 
